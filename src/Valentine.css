@@ -346,7 +346,7 @@
   
   .buttons-container {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2.5rem; /* Increased from 1.5rem for better mobile separation */
     padding: 0 1rem;
   }
   
@@ -354,10 +354,12 @@
     font-size: 1.3rem;
     padding: 1.2rem 2.5rem;
     min-width: 200px;
+    min-height: 60px; /* Ensure minimum touch target size */
   }
   
   .no-button {
     font-size: 1.1rem;
+    min-height: 55px; /* Ensure minimum touch target size */
     padding: 1rem 2rem;
     min-width: 180px;
     max-width: 250px;

@@ -94,44 +94,106 @@ const Valentine: React.FC = () => {
     let viewportWidth, viewportHeight, safePadding;
     
     if (isIPhoneXR) {
-      // iPhone XR specific: 414x896px
       viewportWidth = 414;
       viewportHeight = 896;
-      safePadding = 60; // Safe for small screen
+      safePadding = 80; // Increased from 60 for better mobile separation
     } else if (isStandardLaptop) {
-      // Standard laptop: 1366x768px minimum
-      viewportWidth = Math.min(window.innerWidth, 1920); // Cap at 1920 for performance
-      viewportHeight = Math.min(window.innerHeight, 1080); // Cap at 1080 for performance
-      safePadding = 150; // Larger safe zone for desktop
+      viewportWidth = Math.min(window.innerWidth, 1920);
+      viewportHeight = Math.min(window.innerHeight, 1080);
+      safePadding = 150;
+    } else if (isMobile) {
+      // General mobile devices
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+      safePadding = 100; // Increased from default for mobile
     } else {
-      // Other devices - safe fallback
       viewportWidth = window.innerWidth;
       viewportHeight = window.innerHeight;
       safePadding = 100;
     }
     
-    // Calculate mathematically safe boundaries
+    // Define safe zone around Yes button (centered)
+    const yesButtonWidth = isMobile ? 200 : 150;
+    const yesButtonHeight = 80;
+    const yesButtonCenterX = viewportWidth / 2;
+    const yesButtonCenterY = viewportHeight / 2;
+    
+    // Calculate safe boundaries excluding Yes button area
     const minX = safePadding;
     const minY = safePadding;
     const maxX = Math.max(minX, viewportWidth - buttonWidth - safePadding);
     const maxY = Math.max(minY, viewportHeight - buttonHeight - safePadding);
     
-    // Generate position within safe bounds
-    const safeX = minX + Math.random() * (maxX - minX);
-    const safeY = minY + Math.random() * (maxY - minY);
+    // Define exclusion zone around Yes button
+    const exclusionRadius = 120; // Minimum distance from Yes button center
     
-    const position = { x: safeX, y: safeY };
+    // Generate multiple positions and pick the safest
+    let bestPosition = null;
+    let maxDistance = 0;
     
-    console.log('Device:', isIPhoneXR ? 'iPhone XR' : isStandardLaptop ? 'Standard Laptop' : 'Other', 'Position:', position, 'Viewport:', {width: viewportWidth, height: viewportHeight});
+    for (let i = 0; i < 20; i++) { // Try 20 random positions
+      const candidateX = minX + Math.random() * (maxX - minX);
+      const candidateY = minY + Math.random() * (maxY - minY);
+      
+      // Calculate distance from Yes button center
+      const distanceFromYes = Math.sqrt(
+        Math.pow(candidateX + buttonWidth/2 - yesButtonCenterX, 2) + 
+        Math.pow(candidateY + buttonHeight/2 - yesButtonCenterY, 2)
+      );
+      
+      // Check if position is safe (far enough from Yes button and in bounds)
+      if (distanceFromYes >= exclusionRadius && 
+          candidateX >= minX && candidateY >= minY &&
+          candidateX + buttonWidth <= maxX && candidateY + buttonHeight <= maxY) {
+        
+        if (distanceFromYes > maxDistance) {
+          maxDistance = distanceFromYes;
+          bestPosition = { x: candidateX, y: candidateY };
+        }
+      }
+    }
     
-    // Double-check bounds (mathematical guarantee)
+    // Fallback to corner positions if no safe random position found
+    if (!bestPosition) {
+      const cornerPositions = [
+        { x: minX, y: minY }, // Top-left
+        { x: maxX - buttonWidth, y: minY }, // Top-right
+        { x: minX, y: maxY - buttonHeight }, // Bottom-left
+        { x: maxX - buttonWidth, y: maxY - buttonHeight }, // Bottom-right
+      ];
+      
+      // Pick corner farthest from Yes button
+      bestPosition = cornerPositions.reduce((farthest, corner) => {
+        const distance = Math.sqrt(
+          Math.pow(corner.x + buttonWidth/2 - yesButtonCenterX, 2) + 
+          Math.pow(corner.y + buttonHeight/2 - yesButtonCenterY, 2)
+        );
+        const farthestDistance = Math.sqrt(
+          Math.pow(farthest.x + buttonWidth/2 - yesButtonCenterX, 2) + 
+          Math.pow(farthest.y + buttonHeight/2 - yesButtonCenterY, 2)
+        );
+        return distance > farthestDistance ? corner : farthest;
+      });
+    }
+    
+    const position = bestPosition;
+    
+    console.log('Device:', isIPhoneXR ? 'iPhone XR' : isStandardLaptop ? 'Standard Laptop' : isMobile ? 'Mobile' : 'Other', 
+                'Position:', position, 
+                'Viewport:', {width: viewportWidth, height: viewportHeight},
+                'Distance from Yes:', Math.sqrt(
+                  Math.pow(position.x + buttonWidth/2 - yesButtonCenterX, 2) + 
+                  Math.pow(position.y + buttonHeight/2 - yesButtonCenterY, 2)
+                ));
+    
+    // Double-check bounds
     if (position.x < 0 || position.y < 0 || 
         position.x + buttonWidth > viewportWidth || 
         position.y + buttonHeight > viewportHeight) {
       console.error('POSITION OUTSIDE BOUNDS - applying emergency fix');
       return {
         x: safePadding,
-        y: safePadding
+        y: viewportHeight - buttonHeight - safePadding // Bottom-left fallback
       };
     }
     
