@@ -346,10 +346,8 @@
   
   .buttons-container {
     flex-direction: column;
-    gap: 4rem; /* Much larger gap for mobile separation */
+    gap: 2.5rem; /* Increased from 1.5rem for better mobile separation */
     padding: 0 1rem;
-    justify-content: space-between;
-    min-height: 60vh; /* Ensure buttons are far apart vertically */
   }
   
   .yes-button {
@@ -365,11 +363,6 @@
     min-width: 180px;
     min-height: 55px; /* Ensure minimum touch target size */
     max-width: 250px;
-    order: 2; /* Ensure No button stays at bottom */
-  }
-  
-  .yes-button {
-    order: 1; /* Ensure Yes button stays at top */
   }
   
   .button-text {

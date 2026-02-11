@@ -10,6 +10,7 @@ const Valentine: React.FC = () => {
   const [noButtonText, setNoButtonText] = useState('No 💔');
   const [isMobile, setIsMobile] = useState(false);
   const [noButtonVisible, setNoButtonVisible] = useState(true);
+  const [justClickedNo, setJustClickedNo] = useState(false);
 
   // Bold colors for different attempts
   const messageColors = [
@@ -112,11 +113,11 @@ const Valentine: React.FC = () => {
       safePadding = 100;
     }
     
-    // Define safe zone around Yes button (at 25% from top on mobile, centered on desktop)
+    // Define safe zone around Yes button (centered)
     const yesButtonWidth = isMobile ? 200 : 150;
     const yesButtonHeight = 80;
     const yesButtonCenterX = viewportWidth / 2;
-    const yesButtonCenterY = isMobile ? viewportHeight * 0.25 : viewportHeight / 2;
+    const yesButtonCenterY = viewportHeight / 2;
     
     // Calculate safe boundaries excluding Yes button area
     const minX = safePadding;
@@ -204,6 +205,9 @@ const Valentine: React.FC = () => {
     e.preventDefault();
     setClickCount(prev => prev + 1);
     const attempt = clickCount + 1;
+    // Prevent Yes button from responding immediately after No click
+    setJustClickedNo(true);
+    setTimeout(() => setJustClickedNo(false), 300); // 300ms delay
     // Create heart animation when No is clicked
     const newHeart = {
       id: Date.now(),
@@ -321,6 +325,10 @@ const Valentine: React.FC = () => {
   };
 
   const handleYesButton = () => {
+    // Don't allow Yes button to work if No was just clicked (prevent accidental activation)
+    if (justClickedNo && isMobile) {
+      return;
+    }
     setShowMessage(true);
     // Create massive celebration
     for (let i = 0; i < 30; i++) {
@@ -401,13 +409,6 @@ const Valentine: React.FC = () => {
             <button 
               className="yes-button"
               onClick={handleYesButton}
-              style={{
-                position: isMobile ? 'fixed' : 'static',
-                top: isMobile ? '25%' : 'auto',
-                left: isMobile ? '50%' : 'auto',
-                transform: isMobile ? 'translateX(-50%)' : 'none',
-                zIndex: 1000,
-              }}
             >
               <span className="button-text">YES! 💖</span>
             </button>
@@ -418,10 +419,10 @@ const Valentine: React.FC = () => {
               onMouseEnter={handleNoButtonHover}
               onTouchStart={handleNoButtonTouch}
               style={{
-                position: clickCount > 0 ? 'fixed' : (isMobile ? 'fixed' : 'static'),
-                left: isMobile ? '50%' : (clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.x, window.innerWidth - 150))}px` : 'auto'),
-                top: isMobile ? '75%' : (clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.y, window.innerHeight - 80))}px` : 'auto'),
-                transform: `scale(${noButtonSize}) ${isMobile ? 'translateX(-50%)' : ''}`,
+                position: clickCount > 0 ? 'fixed' : 'static',
+                left: clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.x, window.innerWidth - 150))}px` : 'auto',
+                top: clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.y, window.innerHeight - 80))}px` : 'auto',
+                transform: `scale(${noButtonSize})`,
                 transition: 'all 0.2s ease-out',
                 opacity: 1,
                 zIndex: 9999,
