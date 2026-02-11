@@ -105,7 +105,7 @@ const Valentine: React.FC = () => {
       // General mobile devices
       viewportWidth = window.innerWidth;
       viewportHeight = window.innerHeight;
-      safePadding = 100; // Increased from default for mobile
+      safePadding = 150; // Much larger padding for mobile to prevent overlap
     } else {
       viewportWidth = window.innerWidth;
       viewportHeight = window.innerHeight;
@@ -125,7 +125,7 @@ const Valentine: React.FC = () => {
     const maxY = Math.max(minY, viewportHeight - buttonHeight - safePadding);
     
     // Define exclusion zone around Yes button
-    const exclusionRadius = 120; // Minimum distance from Yes button center
+    const exclusionRadius = isMobile ? 200 : 120; // Much larger distance for mobile touch safety
     
     // Generate multiple positions and pick the safest
     let bestPosition = null;
