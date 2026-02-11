@@ -112,11 +112,11 @@ const Valentine: React.FC = () => {
       safePadding = 100;
     }
     
-    // Define safe zone around Yes button (centered)
+    // Define safe zone around Yes button (at 25% from top on mobile, centered on desktop)
     const yesButtonWidth = isMobile ? 200 : 150;
     const yesButtonHeight = 80;
     const yesButtonCenterX = viewportWidth / 2;
-    const yesButtonCenterY = viewportHeight / 2;
+    const yesButtonCenterY = isMobile ? viewportHeight * 0.25 : viewportHeight / 2;
     
     // Calculate safe boundaries excluding Yes button area
     const minX = safePadding;
@@ -401,6 +401,13 @@ const Valentine: React.FC = () => {
             <button 
               className="yes-button"
               onClick={handleYesButton}
+              style={{
+                position: isMobile ? 'fixed' : 'static',
+                top: isMobile ? '25%' : 'auto',
+                left: isMobile ? '50%' : 'auto',
+                transform: isMobile ? 'translateX(-50%)' : 'none',
+                zIndex: 1000,
+              }}
             >
               <span className="button-text">YES! 💖</span>
             </button>
@@ -411,10 +418,10 @@ const Valentine: React.FC = () => {
               onMouseEnter={handleNoButtonHover}
               onTouchStart={handleNoButtonTouch}
               style={{
-                position: clickCount > 0 ? 'fixed' : 'static',
-                left: clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.x, window.innerWidth - 150))}px` : 'auto',
-                top: clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.y, window.innerHeight - 80))}px` : 'auto',
-                transform: `scale(${noButtonSize})`,
+                position: clickCount > 0 ? 'fixed' : (isMobile ? 'fixed' : 'static'),
+                left: isMobile ? '50%' : (clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.x, window.innerWidth - 150))}px` : 'auto'),
+                top: isMobile ? '75%' : (clickCount > 0 ? `${Math.max(0, Math.min(noButtonPosition.y, window.innerHeight - 80))}px` : 'auto'),
+                transform: `scale(${noButtonSize}) ${isMobile ? 'translateX(-50%)' : ''}`,
                 transition: 'all 0.2s ease-out',
                 opacity: 1,
                 zIndex: 9999,
