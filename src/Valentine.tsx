@@ -85,23 +85,63 @@ const Valentine: React.FC = () => {
     setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
   }, []);
 
+  // Mathematically IMPOSSIBLE button positioning - device-specific calculations
+  const getSafePosition = (buttonWidth: number, buttonHeight: number) => {
+    // Detect device type
+    const isIPhoneXR = isMobile && window.innerWidth === 414 && window.innerHeight === 896;
+    const isStandardLaptop = !isMobile && window.innerWidth >= 1366 && window.innerHeight >= 768;
+    
+    let viewportWidth, viewportHeight, safePadding;
+    
+    if (isIPhoneXR) {
+      // iPhone XR specific: 414x896px
+      viewportWidth = 414;
+      viewportHeight = 896;
+      safePadding = 60; // Safe for small screen
+    } else if (isStandardLaptop) {
+      // Standard laptop: 1366x768px minimum
+      viewportWidth = Math.min(window.innerWidth, 1920); // Cap at 1920 for performance
+      viewportHeight = Math.min(window.innerHeight, 1080); // Cap at 1080 for performance
+      safePadding = 150; // Larger safe zone for desktop
+    } else {
+      // Other devices - safe fallback
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+      safePadding = 100;
+    }
+    
+    // Calculate mathematically safe boundaries
+    const minX = safePadding;
+    const minY = safePadding;
+    const maxX = Math.max(minX, viewportWidth - buttonWidth - safePadding);
+    const maxY = Math.max(minY, viewportHeight - buttonHeight - safePadding);
+    
+    // Generate position within safe bounds
+    const safeX = minX + Math.random() * (maxX - minX);
+    const safeY = minY + Math.random() * (maxY - minY);
+    
+    const position = { x: safeX, y: safeY };
+    
+    console.log('Device:', isIPhoneXR ? 'iPhone XR' : isStandardLaptop ? 'Standard Laptop' : 'Other', 'Position:', position, 'Viewport:', {width: viewportWidth, height: viewportHeight});
+    
+    // Double-check bounds (mathematical guarantee)
+    if (position.x < 0 || position.y < 0 || 
+        position.x + buttonWidth > viewportWidth || 
+        position.y + buttonHeight > viewportHeight) {
+      console.error('POSITION OUTSIDE BOUNDS - applying emergency fix');
+      return {
+        x: safePadding,
+        y: safePadding
+      };
+    }
+    
+    return position;
+  };
+
   const handleNoButton = (e: React.MouseEvent) => {
     e.preventDefault();
     setClickCount(prev => prev + 1);
-    
-    // Different funny behaviors based on attempt count
     const attempt = clickCount + 1;
-    
-    // Create floating reaction
-    const reactions = ['😱', '💔', '😭', '🥺', '😢', '💀', '🤕', '💥', '🆘️', '🚫'];
-    const reaction = reactions[Math.min(attempt - 1, reactions.length - 1)];
-    
-    const newHeart = {
-      id: Date.now(),
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      emoji: reaction
-    };
     setHearts(prev => [...prev, newHeart]);
     
     setTimeout(() => {
