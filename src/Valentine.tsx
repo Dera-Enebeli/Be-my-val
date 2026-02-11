@@ -142,6 +142,13 @@ const Valentine: React.FC = () => {
     e.preventDefault();
     setClickCount(prev => prev + 1);
     const attempt = clickCount + 1;
+    // Create heart animation when No is clicked
+    const newHeart = {
+      id: Date.now(),
+      left: Math.random() * 100,
+      top: 100 + Math.random() * 20,
+      emoji: '💔'
+    };
     setHearts(prev => [...prev, newHeart]);
     
     setTimeout(() => {
